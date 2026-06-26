@@ -2,15 +2,16 @@
 // KONFIGURASI
 // ============================================
 const CONFIG = {
-    DANA_NUMBER: '085216704274', // <-- GANTI INI
+    DANA_NUMBER: '085216704274', // Ganti dengan nomor DANA lo
     ADMIN_PASSWORD: 'WAnzSHOP0812'
 };
 
 // ============================================
-// STATE - DATA LAYANAN
+// STATE - DATA LAYANAN (HARGA SETTINGAN LO)
 // ============================================
 let state = {
     services: [
+        // ========== INSTAGRAM ==========
         // ========== INSTAGRAM ==========
         { id: 1, name: 'Followers Instagram (Indonesia)', price: 31, min: 100, max: 2000, category: 'instagram' },
         { id: 2, name: 'Followers Instagram (Global)', price: 10, min: 100, max: 50000, category: 'instagram' },
@@ -35,8 +36,12 @@ let state = {
         { id: 17, name: 'WhatsApp Verified Badge', price: 1500000, min: 1, max: 1, category: 'whatsapp' },
     ],
     selectedService: null,
-    cart: { serviceId: null, target: '', quantity: 10, totalPrice: 0 },
-    currentPage: 'services'
+    cart: {
+        serviceId: null,
+        target: '',
+        quantity: 10,
+        totalPrice: 0
+    }
 };
 
 // ============================================
@@ -71,154 +76,226 @@ const DOM = {
     hiddenTarget: document.getElementById('hiddenTarget'),
     hiddenQuantity: document.getElementById('hiddenQuantity'),
     hiddenPrice: document.getElementById('hiddenPrice'),
-    trackingContainer: document.getElementById('trackingContainer'),
-    trackingOrders: document.getElementById('trackingOrders'),
-    trackingTargetInput: document.getElementById('trackingTargetInput'),
-    trackingSearchBtn: document.getElementById('trackingSearchBtn'),
     toast: document.getElementById('toast'),
     toastMessage: document.getElementById('toastMessage'),
     hamburger: document.getElementById('hamburger'),
-    navbarMenu: document.querySelector('.navbar-menu'),
-    navLinks: document.querySelectorAll('.nav-link')
+    navbarMenu: document.querySelector('.navbar-menu')
 };
 
 // ============================================
-// LOAD SERVICES
+// 1. LOAD SERVICES (LANGSUNG DARI STATE)
 // ============================================
 function loadServices() {
+    console.log('🚀 loadServices() dipanggil');
     DOM.loadingServices.style.display = 'none';
+    
+    console.log('📦 Jumlah layanan:', state.services.length);
+    
+    if (!DOM.servicesGrid) {
+        console.error('❌ DOM.servicesGrid tidak ditemukan!');
+        return;
+    }
+    
+    if (state.services.length === 0) {
+        DOM.servicesGrid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                <p>Tidak ada layanan tersedia</p>
+            </div>
+        `;
+        return;
+    }
+    
     renderServices(state.services);
     populateSelect(state.services);
 }
 
 // ============================================
-// RENDER SERVICES
+// 2. RENDER SERVICES
 // ============================================
 function renderServices(services) {
-    if (!services || services.length === 0) {
-        DOM.servicesGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;"><p>Tidak ada layanan</p></div>`;
+    if (!services || !Array.isArray(services)) {
+        console.error('❌ services bukan array:', services);
         return;
     }
     
-    DOM.servicesGrid.innerHTML = services.map(service => `
-        <div class="service-card" data-service-id="${service.id}" onclick="selectService('${service.id}')">
-            <div class="service-icon">
-                <i class="fab fa-${getServiceIcon(service.category)}"></i>
+    if (services.length === 0) {
+        DOM.servicesGrid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                <p>Tidak ada layanan tersedia</p>
             </div>
-            <div class="service-name">${service.name}</div>
-            <div class="service-category">${capitalize(service.category)}</div>
-            <div class="service-price">
-                Rp ${formatNumber(service.price)}
-                <small>/unit</small>
+        `;
+        return;
+    }
+    
+    let html = '';
+    services.forEach(service => {
+        html += `
+            <div class="service-card" data-service-id="${service.id}" onclick="selectService('${service.id}')">
+                <div class="service-icon">
+                    <i class="fab fa-${getServiceIcon(service.category)}"></i>
+                </div>
+                <div class="service-name">${service.name}</div>
+                <div class="service-category">${capitalize(service.category)}</div>
+                <div class="service-price">
+                    Rp ${formatNumber(service.price)}
+                    <small>/unit</small>
+                </div>
+                <div class="service-min">Min. Order: ${service.min}</div>
+                ${service.max ? `<div class="service-max" style="font-size:13px;color:var(--gray-500);">Max. Order: ${service.max}</div>` : ''}
             </div>
-            <div class="service-min">Min. Order: ${service.min}</div>
-            ${service.max ? `<div class="service-max" style="font-size:13px;color:var(--gray-500);">Max. Order: ${service.max}</div>` : ''}
-        </div>
-    `).join('');
+        `;
+    });
+    
+    DOM.servicesGrid.innerHTML = html;
 }
 
 // ============================================
-// POPULATE SELECT
+// 3. POPULATE SELECT
 // ============================================
 function populateSelect(services) {
     if (!services || services.length === 0) return;
+    
     DOM.serviceSelect.innerHTML = `
         <option value="">-- Pilih layanan --</option>
-        ${services.map(s => `<option value="${s.id}">${s.name} - Rp ${formatNumber(s.price)}/unit</option>`).join('')}
+        ${services.map(service => `
+            <option value="${service.id}">
+                ${service.name} - Rp ${formatNumber(service.price)}/unit
+            </option>
+        `).join('')}
     `;
 }
 
 // ============================================
-// SELECT SERVICE
+// 4. SELECT SERVICE
 // ============================================
 function selectService(serviceId) {
     const service = state.services.find(s => s.id == serviceId);
     if (!service) return;
+    
     state.selectedService = service;
     DOM.serviceSelect.value = serviceId;
+    
     DOM.pricePerUnit.textContent = `Rp ${formatNumber(service.price)}`;
     DOM.minOrder.textContent = service.min;
     DOM.maxOrder.textContent = service.max || '∞';
     DOM.qtyMinDisplay.textContent = service.min;
+    
     const minQty = service.min || 1;
     DOM.quantityInput.value = minQty;
     DOM.quantityInput.min = minQty;
     if (service.max) DOM.quantityInput.max = service.max;
     state.cart.quantity = minQty;
-    document.querySelectorAll('.service-card').forEach(c => c.classList.toggle('selected', c.dataset.serviceId == serviceId));
+    
+    document.querySelectorAll('.service-card').forEach(card => {
+        card.classList.toggle('selected', card.dataset.serviceId == serviceId);
+    });
+    
     calculateTotal();
     document.getElementById('orderSection').scrollIntoView({ behavior: 'smooth' });
 }
 
 // ============================================
-// QUANTITY HANDLERS
+// 5. HANDLE QUANTITY
 // ============================================
 DOM.qtyMinus.addEventListener('click', () => {
     const current = parseInt(DOM.quantityInput.value) || 0;
     const min = parseInt(DOM.quantityInput.min) || 1;
-    if (current > min) { DOM.quantityInput.value = current - 1; state.cart.quantity = current - 1; calculateTotal(); }
+    if (current > min) {
+        DOM.quantityInput.value = current - 1;
+        state.cart.quantity = current - 1;
+        calculateTotal();
+    }
 });
 
 DOM.qtyPlus.addEventListener('click', () => {
     const current = parseInt(DOM.quantityInput.value) || 0;
     const max = parseInt(DOM.quantityInput.max) || Infinity;
-    if (current < max) { DOM.quantityInput.value = current + 1; state.cart.quantity = current + 1; calculateTotal(); }
+    if (current < max) {
+        DOM.quantityInput.value = current + 1;
+        state.cart.quantity = current + 1;
+        calculateTotal();
+    }
 });
 
 DOM.quantityInput.addEventListener('change', () => {
-    let value = parseInt(DOM.quantityInput.value) || 0;
+    const value = parseInt(DOM.quantityInput.value) || 0;
     const min = parseInt(DOM.quantityInput.min) || 1;
     const max = parseInt(DOM.quantityInput.max) || Infinity;
-    if (value < min) value = min;
-    if (value > max) value = max;
-    DOM.quantityInput.value = value;
-    state.cart.quantity = value;
+    
+    if (value < min) {
+        DOM.quantityInput.value = min;
+        state.cart.quantity = min;
+    } else if (value > max) {
+        DOM.quantityInput.value = max;
+        state.cart.quantity = max;
+    } else {
+        state.cart.quantity = value;
+    }
     calculateTotal();
 });
 
 // ============================================
-// CALCULATE TOTAL
+// 6. CALCULATE TOTAL
 // ============================================
 function calculateTotal() {
     const service = state.selectedService;
-    if (!service) { DOM.totalAmount.textContent = 'Rp 0'; return; }
+    if (!service) {
+        DOM.totalAmount.textContent = 'Rp 0';
+        return;
+    }
+    
     const qty = parseInt(DOM.quantityInput.value) || 0;
     const total = qty * service.price;
+    
     state.cart.totalPrice = total;
     DOM.totalAmount.textContent = `Rp ${formatNumber(total)}`;
 }
 
 // ============================================
-// ORDER FORM SUBMIT
+// 7. HANDLE ORDER FORM SUBMIT
 // ============================================
 DOM.orderForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    
     const serviceId = DOM.serviceSelect.value;
     const target = DOM.targetInput.value.trim();
     const quantity = parseInt(DOM.quantityInput.value) || 0;
     
-    if (!serviceId) { showToast('Pilih layanan!', 'error'); return; }
-    if (!target) { showToast('Masukkan target akun!', 'error'); return; }
+    if (!serviceId) {
+        showToast('Pilih layanan terlebih dahulu!', 'error');
+        return;
+    }
+    
+    if (!target) {
+        showToast('Masukkan username/link akun!', 'error');
+        return;
+    }
     
     const service = state.services.find(s => s.id == serviceId);
-    if (!service) { showToast('Layanan tidak ditemukan!', 'error'); return; }
+    if (!service) {
+        showToast('Layanan tidak ditemukan!', 'error');
+        return;
+    }
     
     const total = quantity * service.price;
+    
     DOM.modalService.textContent = service.name;
     DOM.modalTarget.textContent = target;
     DOM.modalQuantity.textContent = quantity;
     DOM.modalTotal.textContent = `Rp ${formatNumber(total)}`;
     DOM.modalAmount.textContent = `Rp ${formatNumber(total)}`;
+    
     DOM.hiddenService.value = serviceId;
     DOM.hiddenTarget.value = target;
     DOM.hiddenQuantity.value = quantity;
     DOM.hiddenPrice.value = total;
+    
     DOM.paymentModal.classList.add('active');
     document.body.style.overflow = 'hidden';
 });
 
 // ============================================
-// CLOSE MODAL
+// 8. CLOSE MODAL
 // ============================================
 function closeModal() {
     DOM.paymentModal.classList.remove('active');
@@ -227,27 +304,47 @@ function closeModal() {
     DOM.proofImage.value = '';
     DOM.senderName.value = '';
 }
+
 DOM.modalClose.addEventListener('click', closeModal);
-DOM.paymentModal.addEventListener('click', (e) => { if (e.target === DOM.paymentModal) closeModal(); });
+
+DOM.paymentModal.addEventListener('click', (e) => {
+    if (e.target === DOM.paymentModal) {
+        closeModal();
+    }
+});
 
 // ============================================
-// PROOF IMAGE UPLOAD
+// 9. HANDLE PROOF IMAGE UPLOAD
 // ============================================
 DOM.proofImage.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { showToast('Maksimal 2MB!', 'error'); DOM.proofImage.value = ''; return; }
-    if (!file.type.startsWith('image/')) { showToast('Harus gambar!', 'error'); DOM.proofImage.value = ''; return; }
+    
+    if (file.size > 2 * 1024 * 1024) {
+        showToast('Ukuran file terlalu besar! Maksimal 2MB.', 'error');
+        DOM.proofImage.value = '';
+        return;
+    }
+    
+    if (!file.type.startsWith('image/')) {
+        showToast('File harus berupa gambar!', 'error');
+        DOM.proofImage.value = '';
+        return;
+    }
+    
     const reader = new FileReader();
-    reader.onload = (e) => DOM.imagePreview.innerHTML = `<img src="${e.target.result}" alt="Bukti" />`;
+    reader.onload = (e) => {
+        DOM.imagePreview.innerHTML = `<img src="${e.target.result}" alt="Bukti Transfer" />`;
+    };
     reader.readAsDataURL(file);
 });
 
 // ============================================
-// CONFIRMATION FORM
+// 10. HANDLE CONFIRMATION FORM
 // ============================================
 DOM.confirmationForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    
     const senderName = DOM.senderName.value.trim();
     const proofFile = DOM.proofImage.files[0];
     const serviceId = DOM.hiddenService.value;
@@ -255,39 +352,61 @@ DOM.confirmationForm.addEventListener('submit', (e) => {
     const quantity = parseInt(DOM.hiddenQuantity.value);
     const total = parseInt(DOM.hiddenPrice.value);
     
-    if (!senderName) { showToast('Masukkan nama pengirim!', 'error'); return; }
-    if (!proofFile) { showToast('Upload bukti transfer!', 'error'); return; }
+    if (!senderName) {
+        showToast('Masukkan nama pengirim!', 'error');
+        return;
+    }
+    
+    if (!proofFile) {
+        showToast('Upload bukti transfer!', 'error');
+        return;
+    }
     
     const reader = new FileReader();
     reader.onload = (e) => {
+        const proofImage = e.target.result;
+        const service = state.services.find(s => s.id == serviceId);
+        
         const order = {
             id: Date.now(),
-            orderId: `#SMB-${Date.now().toString().slice(-6)}`,
-            serviceId, serviceName: state.services.find(s => s.id == serviceId)?.name || 'Unknown',
-            target, quantity, price: total, status: 'pending',
-            payment: { senderName, proofImage: e.target.result, transferDate: new Date().toISOString() },
+            serviceId: serviceId,
+            serviceName: service?.name || 'Unknown',
+            target: target,
+            quantity: quantity,
+            price: total,
+            status: 'pending',
+            payment: {
+                senderName: senderName,
+                proofImage: proofImage,
+                transferDate: new Date().toISOString()
+            },
             createdAt: new Date().toISOString()
         };
+        
         saveOrder(order);
+        
         closeModal();
         DOM.orderForm.reset();
         DOM.totalAmount.textContent = 'Rp 0';
         DOM.imagePreview.innerHTML = '';
         state.cart = { serviceId: null, target: '', quantity: 0, totalPrice: 0 };
-        showToast('✅ Pesanan berhasil! Cek di Tracking.', 'success');
-        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+        
+        showToast('Pesanan berhasil dibuat! Tunggu konfirmasi admin.', 'success');
+        
+        document.querySelectorAll('.service-card').forEach(card => {
+            card.classList.remove('selected');
+        });
         DOM.serviceSelect.value = '';
         DOM.pricePerUnit.textContent = 'Rp 0';
         DOM.minOrder.textContent = '0';
         DOM.maxOrder.textContent = '0';
         DOM.qtyMinDisplay.textContent = '0';
-        switchTab('tracking');
     };
     reader.readAsDataURL(proofFile);
 });
 
 // ============================================
-// SAVE & GET ORDERS
+// 11. SAVE ORDER
 // ============================================
 function saveOrder(order) {
     let orders = JSON.parse(localStorage.getItem('orders')) || [];
@@ -295,133 +414,84 @@ function saveOrder(order) {
     localStorage.setItem('orders', JSON.stringify(orders));
 }
 
-function getOrders() {
-    return JSON.parse(localStorage.getItem('orders')) || [];
+// ============================================
+// 12. TOAST
+// ============================================
+function showToast(message, type = 'success') {
+    DOM.toastMessage.textContent = message;
+    DOM.toast.className = 'toast show';
+    if (type === 'error') {
+        DOM.toast.classList.add('toast-error');
+    } else {
+        DOM.toast.classList.remove('toast-error');
+    }
+    
+    clearTimeout(DOM.toast._timeout);
+    DOM.toast._timeout = setTimeout(() => {
+        DOM.toast.classList.remove('show');
+    }, 4000);
 }
 
 // ============================================
-// TRACKING ORDERS
+// 13. UTILITY FUNCTIONS
 // ============================================
-function trackOrders(username) {
-    if (!username) {
-        DOM.trackingOrders.innerHTML = `<div class="tracking-empty"><i class="fas fa-search"></i><p>Masukkan username untuk melacak pesanan</p></div>`;
-        return;
-    }
-    const orders = getOrders().filter(o => o.target?.toLowerCase().includes(username.toLowerCase()));
-    if (orders.length === 0) {
-        DOM.trackingOrders.innerHTML = `<div class="tracking-empty"><i class="fas fa-inbox"></i><p>Tidak ada pesanan ditemukan</p></div>`;
-        return;
-    }
-    DOM.trackingOrders.innerHTML = orders.sort((a, b) => b.id - a.id).map(order => `
-        <div class="tracking-card">
-            <div class="tracking-header">
-                <span class="tracking-id">${order.orderId || '#' + order.id}</span>
-                <span class="tracking-date">${formatDate(order.createdAt)}</span>
-            </div>
-            <div class="tracking-body">
-                <div class="tracking-service">${order.serviceName}</div>
-                <div class="tracking-target"><i class="fas fa-user"></i> ${order.target}</div>
-                <div class="tracking-qty">Qty: ${order.quantity} | Total: Rp ${formatNumber(order.price)}</div>
-                <div class="tracking-status status-${order.status}">
-                    <i class="fas ${getStatusIcon(order.status)}"></i> ${capitalize(order.status)}
-                </div>
-                ${order.status === 'rejected' && order.reason ? `<div class="tracking-reason"><i class="fas fa-info-circle"></i> ${order.reason}</div>` : ''}
-            </div>
-        </div>
-    `).join('');
+function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function getServiceIcon(category) {
+    const icons = {
+        'instagram': 'fa-instagram',
+        'tiktok': 'fa-tiktok',
+        'whatsapp': 'fa-whatsapp'
+    };
+    return icons[category] || 'fa-share-alt';
+}
+
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 // ============================================
-// SEARCH TRACKING
+// 14. HAMBURGER
 // ============================================
-DOM.trackingSearchBtn.addEventListener('click', () => {
-    const username = DOM.trackingTargetInput.value.trim();
-    trackOrders(username);
+DOM.hamburger.addEventListener('click', () => {
+    DOM.navbarMenu.classList.toggle('active');
 });
-DOM.trackingTargetInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') DOM.trackingSearchBtn.click(); });
 
-// ============================================
-// SWITCH TAB
-// ============================================
-function switchTab(tab) {
-    state.currentPage = tab;
-    document.querySelectorAll('.page-section').forEach(section => section.style.display = 'none');
-    document.getElementById(`${tab}Section`).style.display = 'block';
-    document.querySelectorAll('.nav-link').forEach(link => link.classList.toggle('active', link.dataset.tab === tab));
-    if (tab === 'tracking') { trackOrders(DOM.trackingTargetInput.value.trim()); }
-}
-
-// ============================================
-// NAV LINKS
-// ============================================
-DOM.navLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const tab = link.dataset.tab;
-        if (tab) switchTab(tab);
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
         DOM.navbarMenu.classList.remove('active');
     });
 });
 
 // ============================================
-// TOAST
-// ============================================
-function showToast(message, type = 'success') {
-    DOM.toastMessage.textContent = message;
-    DOM.toast.className = `toast show ${type === 'error' ? 'toast-error' : ''}`;
-    clearTimeout(DOM.toast._timeout);
-    DOM.toast._timeout = setTimeout(() => DOM.toast.classList.remove('show'), 4000);
-}
-
-// ============================================
-// UTILITY
-// ============================================
-function formatNumber(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
-
-function formatDate(dateString) {
-    const d = new Date(dateString);
-    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
-
-function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
-
-function getStatusIcon(status) {
-    const icons = { pending: 'fa-clock', processed: 'fa-spinner fa-spin', completed: 'fa-check-circle', rejected: 'fa-times-circle' };
-    return icons[status] || 'fa-circle';
-}
-
-function getServiceIcon(category) {
-    const icons = { instagram: 'fa-instagram', tiktok: 'fa-tiktok', whatsapp: 'fa-whatsapp' };
-    return icons[category] || 'fa-share-alt';
-}
-
-// ============================================
-// HAMBURGER
-// ============================================
-DOM.hamburger.addEventListener('click', () => DOM.navbarMenu.classList.toggle('active'));
-
-// ============================================
-// SELECT CHANGE
+// 15. SELECT CHANGE
 // ============================================
 DOM.serviceSelect.addEventListener('change', (e) => {
-    const id = e.target.value;
-    if (id) selectService(id);
-    else {
+    const serviceId = e.target.value;
+    if (serviceId) {
+        selectService(serviceId);
+    } else {
         state.selectedService = null;
         DOM.pricePerUnit.textContent = 'Rp 0';
         DOM.minOrder.textContent = '0';
         DOM.maxOrder.textContent = '0';
         DOM.qtyMinDisplay.textContent = '0';
         DOM.totalAmount.textContent = 'Rp 0';
-        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('.service-card').forEach(card => {
+            card.classList.remove('selected');
+        });
     }
 });
 
 // ============================================
-// INIT
+// 16. INIT
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOM Ready!');
     loadServices();
-    document.querySelectorAll('.dana-number').forEach(el => el.textContent = CONFIG.DANA_NUMBER);
-    switchTab('services');
+    document.querySelectorAll('.dana-number').forEach(el => {
+        el.textContent = CONFIG.DANA_NUMBER;
+    });
 });
