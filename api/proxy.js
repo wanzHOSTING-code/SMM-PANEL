@@ -1,8 +1,8 @@
 // File: api/proxy.js
 
-const API_KEY = 'f8ff9ba294dca07626c4bfdae02bb783';        // Ganti dengan API key asli lo
+const API_KEY = 'c8448d60372d407782dfeedd742508b3';        // Ganti dengan API key asli lo
 const SECRET_KEY = '';  // Ganti dengan secret key asli lo
-const BASE_API_URL = 'https://ezkify.com/api/v2';
+const BASE_API_URL = 'https://indosmm.id/api/v2';
 
 export default async function handler(req, res) {
     // CORS
