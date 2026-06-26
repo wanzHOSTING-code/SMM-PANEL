@@ -489,9 +489,9 @@ DOM.serviceSelect.addEventListener('change', (e) => {
 // 16. INIT
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOM Ready!');
     loadServices();
-    document.querySelectorAll('.dana-number').forEach(el => {
+    // Hanya tampilkan DANA di modal (bukan di footer)
+    document.querySelectorAll('#paymentModal .dana-number').forEach(el => {
         el.textContent = CONFIG.DANA_NUMBER;
     });
 });
