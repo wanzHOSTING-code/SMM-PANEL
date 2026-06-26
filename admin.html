@@ -287,21 +287,24 @@
 
                 <!-- TOMBOL STATUS -->
                 <div class="proof-actions">
-                    <button class="btn btn-success" id="proofApprove">
-                        <i class="fas fa-check"></i> Proses
+                    <button class="btn btn-warning" id="proofPending" style="background:#F59E0B;color:white;">
+                        <i class="fas fa-clock"></i> Pending
                     </button>
-                    <button class="btn btn-primary" id="proofComplete">
+                    <button class="btn btn-primary" id="proofProcessed">
+                        <i class="fas fa-spinner"></i> Proses
+                    </button>
+                    <button class="btn btn-success" id="proofCompleted">
                         <i class="fas fa-check-circle"></i> Selesai
                     </button>
-                    <button class="btn btn-danger" id="proofReject">
+                    <button class="btn btn-danger" id="proofRejected">
                         <i class="fas fa-times"></i> Tolak
                     </button>
                 </div>
 
                 <!-- ALASAN TOLAK -->
                 <div class="proof-reject-reason" id="proofRejectReasonContainer" style="display: none;">
-                    <label for="proofRejectReason">Alasan Penolakan (opsional):</label>
-                    <textarea id="proofRejectReason" placeholder="Tulis alasan penolakan..."></textarea>
+                    <label for="proofRejectReason">Alasan Penolakan:</label>
+                    <textarea id="proofRejectReason" placeholder="Tulis alasan penolakan..." rows="2"></textarea>
                 </div>
             </div>
         </div>
@@ -310,4 +313,4 @@
     <!-- JavaScript -->
     <script src="admin.js"></script>
 </body>
-    </html>
+</html>
