@@ -980,7 +980,7 @@ body {
 .tracking-qty { font-size: 14px; color: #475569; font-weight: 500; }
 
 /* ============================================ */
-/* ALASAN TOLAK - IKON KECIL & RAPIH */
+/* ALASAN TOLAK - TANPA IKON */
 /* ============================================ */
 .tracking-reason {
     margin-top: 10px;
@@ -988,28 +988,15 @@ body {
     background: #FEF2F2;
     border-radius: 6px;
     border-left: 3px solid #EF4444;
-    display: flex;
-    align-items: center;
-    gap: 8px;
     font-size: 13px;
     color: #991B1B;
-    line-height: 1.4;
-}
-
-.tracking-reason i {
-    font-size: 13px;
-    color: #EF4444;
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
+    line-height: 1.5;
 }
 
 .tracking-reason strong {
     font-weight: 600;
     color: #7F1D1D;
+    margin-right: 4px;
 }
 
 .tracking-empty { text-align: center; padding: 60px 20px; }
