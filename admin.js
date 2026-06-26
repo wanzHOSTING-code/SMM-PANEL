@@ -463,9 +463,11 @@ function showToast(message, type = 'success') {
 // 20. EVENT LISTENER TOMBOL STATUS ADMIN
 // ============================================
 function setupStatusButtons() {
+function setupStatusButtons() {
     // Tombol Pending
-    if (DOM.proofPending) {
-        DOM.proofPending.addEventListener('click', function() {
+    const pendingBtn = document.getElementById('proofPending');
+    if (pendingBtn) {
+        pendingBtn.addEventListener('click', function() {
             if (state.currentOrderId) {
                 updateOrderStatus(state.currentOrderId, 'pending');
             } else {
@@ -475,8 +477,9 @@ function setupStatusButtons() {
     }
     
     // Tombol Proses
-    if (DOM.proofProcessed) {
-        DOM.proofProcessed.addEventListener('click', function() {
+    const processBtn = document.getElementById('proofProcessed');
+    if (processBtn) {
+        processBtn.addEventListener('click', function() {
             if (state.currentOrderId) {
                 updateOrderStatus(state.currentOrderId, 'processed');
             } else {
@@ -486,8 +489,9 @@ function setupStatusButtons() {
     }
     
     // Tombol Selesai
-    if (DOM.proofCompleted) {
-        DOM.proofCompleted.addEventListener('click', function() {
+    const completeBtn = document.getElementById('proofCompleted');
+    if (completeBtn) {
+        completeBtn.addEventListener('click', function() {
             if (state.currentOrderId) {
                 updateOrderStatus(state.currentOrderId, 'completed');
             } else {
@@ -496,14 +500,36 @@ function setupStatusButtons() {
         });
     }
     
-    // Tombol Tolak
-    if (DOM.proofRejected) {
-        DOM.proofRejected.addEventListener('click', function(e) {
-            // Toggle alasan tolak
+    // ========== TOMBOL TOLAK (FIX) ==========
+    const rejectBtn = document.getElementById('proofRejected');
+    if (rejectBtn) {
+        rejectBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
             const container = document.getElementById('proofRejectReasonContainer');
-            if (container) {
-                const isVisible = container.style.display === 'block';
-                container.style.display = isVisible ? 'none' : 'block';
+            const reasonInput = document.getElementById('proofRejectReason');
+            
+            // Kalo form alasan belum keliatan -> tampilkan
+            if (!container || container.style.display === 'none' || container.style.display === '') {
+                if (container) container.style.display = 'block';
+                if (reasonInput) {
+                    reasonInput.value = '';
+                    reasonInput.focus();
+                }
+                return;
+            }
+            
+            // Kalo udah keliatan -> proses tolak
+            if (state.currentOrderId) {
+                const reason = reasonInput ? reasonInput.value.trim() : '';
+                if (!reason) {
+                    showToast('⚠️ Mohon isi alasan penolakan!', 'error');
+                    if (reasonInput) reasonInput.focus();
+                    return;
+                }
+                updateOrderStatus(state.currentOrderId, 'rejected', reason);
+            } else {
+                showToast('❌ Tidak ada pesanan yang dipilih!', 'error');
             }
         });
     }
