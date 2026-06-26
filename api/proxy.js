@@ -1,8 +1,8 @@
 // File: api/proxy.js
 
-const API_KEY = 'afdd33f75f265f6771070c5ce32964d824306ba194fb63b521d5f22afcd32a61';        // Ganti dengan API key asli lo
-const SECRET_KEY = '96b5d8f9f69d658affee5e231acaeda26238e149d38029ed2b565c827cb0311a';  // Ganti dengan secret key asli lo
-const BASE_API_URL = 'https://pusatpanelsmm.com/api/json.php';
+const API_KEY = 'f8ff9ba294dca07626c4bfdae02bb783';        // Ganti dengan API key asli lo
+const SECRET_KEY = '';  // Ganti dengan secret key asli lo
+const BASE_API_URL = 'https://ezkify.com/api/v2';
 
 export default async function handler(req, res) {
     // CORS
