@@ -24,9 +24,8 @@
             </div>
             
             <div class="navbar-menu">
-                <a href="#services" class="nav-link active">Layanan</a>
-                <a href="#how-it-works" class="nav-link">Cara Kerja</a>
-                <a href="#testimonials" class="nav-link">Testimoni</a>
+                <a href="#servicesSection" class="nav-link active" data-tab="services">Layanan</a>
+                <a href="#trackingSection" class="nav-link" data-tab="tracking">Lacak Pesanan</a>
                 <a href="admin.html" class="btn btn-outline btn-sm">
                     <i class="fas fa-user-shield"></i> Admin
                 </a>
@@ -53,11 +52,11 @@
                     terbaik dan proses cepat. Cocok untuk personal maupun reseller.
                 </p>
                 <div class="hero-buttons">
-                    <a href="#services" class="btn btn-primary btn-lg">
+                    <a href="#servicesSection" class="btn btn-primary btn-lg">
                         <i class="fas fa-shopping-cart"></i> Mulai Pesan
                     </a>
-                    <a href="#how-it-works" class="btn btn-outline btn-lg">
-                        <i class="fas fa-play-circle"></i> Lihat Cara
+                    <a href="#trackingSection" class="btn btn-outline btn-lg">
+                        <i class="fas fa-search"></i> Lacak Pesanan
                     </a>
                 </div>
                 <div class="hero-stats">
@@ -85,7 +84,7 @@
     <!-- ============================================ -->
     <!-- LAYANAN SECTION -->
     <!-- ============================================ -->
-    <section class="services" id="services">
+    <section class="services page-section" id="servicesSection" style="display: block;">
         <div class="container">
             <div class="section-header">
                 <span class="badge">Layanan Kami</span>
@@ -93,13 +92,11 @@
                 <p>Ribuan layanan tersedia dengan harga kompetitif dan kualitas terbaik</p>
             </div>
 
-            <!-- Loading -->
-            <div id="loadingServices" class="loading-spinner">
+            <div id="loadingServices" class="loading-spinner" style="display:none;">
                 <i class="fas fa-spinner fa-spin"></i>
                 <p>Memuat layanan...</p>
             </div>
 
-            <!-- Grid Layanan -->
             <div class="services-grid" id="servicesGrid">
                 <!-- Akan diisi oleh JavaScript -->
             </div>
@@ -107,9 +104,9 @@
     </section>
 
     <!-- ============================================ -->
-    <!-- FORM ORDER SECTION -->
+    <!-- ORDER SECTION -->
     <!-- ============================================ -->
-    <section class="order-section" id="orderSection">
+    <section class="order-section page-section" id="orderSection" style="display: block;">
         <div class="container">
             <div class="section-header">
                 <span class="badge">Buat Pesanan</span>
@@ -119,7 +116,6 @@
 
             <div class="order-card">
                 <form id="orderForm">
-                    <!-- Pilih Layanan -->
                     <div class="form-group">
                         <label for="serviceSelect">
                             <i class="fas fa-list"></i> Pilih Layanan
@@ -129,7 +125,6 @@
                         </select>
                     </div>
 
-                    <!-- Detail Layanan yang Dipilih -->
                     <div class="service-detail" id="serviceDetail">
                         <div class="detail-item">
                             <span class="label">Harga per Unit:</span>
@@ -145,7 +140,6 @@
                         </div>
                     </div>
 
-                    <!-- Target -->
                     <div class="form-group">
                         <label for="targetInput">
                             <i class="fas fa-user"></i> Username / Link Akun
@@ -159,7 +153,6 @@
                         <small>Masukkan username atau URL akun sosial media Anda</small>
                     </div>
 
-                    <!-- Quantity -->
                     <div class="form-group">
                         <label for="quantityInput">
                             <i class="fas fa-sort-amount-up"></i> Quantity (Jumlah)
@@ -178,17 +171,42 @@
                         <small>Minimal order: <span id="qtyMinDisplay">0</span></small>
                     </div>
 
-                    <!-- Total Harga -->
                     <div class="total-price">
                         <span>Total Pembayaran</span>
                         <span class="total-amount" id="totalAmount">Rp 0</span>
                     </div>
 
-                    <!-- Tombol -->
                     <button type="submit" class="btn btn-primary btn-block btn-lg">
                         <i class="fas fa-credit-card"></i> Pesan Sekarang
                     </button>
                 </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- TRACKING SECTION -->
+    <!-- ============================================ -->
+    <section class="page-section" id="trackingSection" style="display: none;">
+        <div class="container">
+            <div class="section-header">
+                <span class="badge">Lacak Pesanan</span>
+                <h2>Status <span class="gradient-text">Pesanan</span></h2>
+                <p>Masukkan username/link akun untuk melacak status pesanan Anda</p>
+            </div>
+
+            <div class="tracking-search">
+                <input type="text" id="trackingTargetInput" placeholder="Masukkan username / link akun..." />
+                <button class="btn btn-primary" id="trackingSearchBtn">
+                    <i class="fas fa-search"></i> Cari
+                </button>
+            </div>
+
+            <div class="tracking-container" id="trackingContainer">
+                <div class="tracking-empty" id="trackingOrders">
+                    <i class="fas fa-search"></i>
+                    <p>Masukkan username untuk melacak pesanan</p>
+                </div>
             </div>
         </div>
     </section>
@@ -228,8 +246,8 @@
                     <div class="step-icon">
                         <i class="fas fa-check-circle"></i>
                     </div>
-                    <h3>Pesanan Diproses</h3>
-                    <p>Admin akan memverifikasi dan memproses pesanan Anda segera</p>
+                    <h3>Lacak Pesanan</h3>
+                    <p>Pantau status pesanan Anda di halaman Lacak Pesanan</p>
                 </div>
             </div>
         </div>
@@ -251,8 +269,8 @@
                     <h4>Layanan</h4>
                     <a href="#">Instagram</a>
                     <a href="#">TikTok</a>
+                    <a href="#">WhatsApp</a>
                     <a href="#">YouTube</a>
-                    <a href="#">Facebook</a>
                 </div>
 
                 <div class="footer-links">
@@ -266,7 +284,7 @@
                 <div class="footer-contact">
                     <h4>Hubungi Kami</h4>
                     <p><i class="fab fa-whatsapp"></i> +62 857-XXXX-XXXX</p>
-                    <p><i class="fab fa-dana"></i> DANA: 0857-XXXX-XXXX</p>
+                    <p><i class="fab fa-dana"></i> DANA: <span class="dana-number">0857-XXXX-XXXX</span></p>
                     <div class="social-icons">
                         <a href="#"><i class="fab fa-instagram"></i></a>
                         <a href="#"><i class="fab fa-tiktok"></i></a>
@@ -292,7 +310,6 @@
             </div>
 
             <div class="modal-body">
-                <!-- Detail Pesanan -->
                 <div class="order-summary">
                     <h3>Detail Pesanan</h3>
                     <div class="summary-item">
@@ -313,7 +330,6 @@
                     </div>
                 </div>
 
-                <!-- Info Pembayaran -->
                 <div class="payment-info">
                     <div class="payment-method">
                         <i class="fab fa-dana"></i>
@@ -329,7 +345,6 @@
                     </div>
                 </div>
 
-                <!-- Form Konfirmasi Transfer -->
                 <form id="confirmationForm">
                     <h3>Form Konfirmasi Transfer</h3>
                     
@@ -387,4 +402,4 @@
     <!-- JavaScript -->
     <script src="script.js"></script>
 </body>
-</html>
+                    </html>
