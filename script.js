@@ -557,10 +557,10 @@ function trackOrders(username) {
 
 function getTrackingStatusIcon(status) {
     const icons = {
-        pending: 'fa-clock',
-        processed: 'fa-spinner fa-spin',
-        completed: 'fa-check-circle',
-        rejected: 'fa-times-circle'
+        'pending': 'fa-clock',
+        'processed': 'fa-spinner fa-spin',
+        'completed': 'fa-check-circle',
+        'rejected': 'fa-times-circle'
     };
     return icons[status] || 'fa-circle';
 }
