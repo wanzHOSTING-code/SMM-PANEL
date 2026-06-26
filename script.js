@@ -1,18 +1,40 @@
 // ============================================
-// KONFIGURASI - VERSI PROXY VERCEL
+// KONFIGURASI
 // ============================================
 const CONFIG = {
-    // API_URL sekarang ngarah ke proxy Vercel lo
-    API_URL: '/api/proxy', // Ini otomatis ke backend lo di Vercel
-    DANA_NUMBER: '0857-1405-4900', // Ganti dengan nomor DANA lo
+    DANA_NUMBER: '085216704274', // Ganti dengan nomor DANA lo
     ADMIN_PASSWORD: 'admin123'
 };
 
 // ============================================
-// STATE
+// STATE - DATA DUMMY LAYANAN
 // ============================================
 let state = {
-    services: [],
+    services: [
+        // ========== INSTAGRAM ==========
+        { id: 1, name: 'Followers Instagram (Indonesia)', price: 5000, min: 100, max: 10000, category: 'instagram' },
+        { id: 2, name: 'Followers Instagram (Global)', price: 3000, min: 100, max: 50000, category: 'instagram' },
+        { id: 3, name: 'Likes Foto Instagram', price: 1000, min: 200, max: 50000, category: 'instagram' },
+        { id: 4, name: 'Views Reels Instagram', price: 1000, min: 200, max: 100000, category: 'instagram' },
+        { id: 5, name: 'Komentar Instagram', price: 3000, min: 100, max: 1000, category: 'instagram' },
+        { id: 6, name: 'Save Post Instagram', price: 1000, min: 100, max: 5000, category: 'instagram' },
+        { id: 7, name: 'Story Views Instagram', price: 1000, min: 200, max: 50000, category: 'instagram' },
+        { id: 8, name: 'IGTV Views', price: 1000, min: 200, max: 100000, category: 'instagram' },
+        
+        // ========== TIKTOK ==========
+        { id: 9, name: 'Followers TikTok (Indonesia)', price: 3000, min: 100, max: 50000, category: 'tiktok' },
+        { id: 10, name: 'Followers TikTok (Global)', price: 4000, min: 100, max: 50000, category: 'tiktok' },
+        { id: 11, name: 'Likes Video TikTok', price: 500, min: 100, max: 50000, category: 'tiktok' },
+        { id: 12, name: 'Views TikTok', price: 500, min: 100, max: 100000, category: 'tiktok' },
+        { id: 13, name: 'Share TikTok', price: 100, min: 100, max: 50000, category: 'tiktok' },
+        { id: 14, name: 'Comment TikTok', price: 2000, min: 100, max: 1000, category: 'tiktok' },
+        { id: 15, name: 'Live Views TikTok', price: 7000, min: 100, max: 50000, category: 'tiktok' },
+        
+        // ========== WHATSAPP ==========
+        { id: 16, name: 'Pengikut Saluran WhatsApp', price: 5000, min: 50, max: 500, category: 'whatsapp' },
+        { id: 17, name: 'WhatsApp Verified Badge', price: 1500000, min: 1, max: 1, category: 'whatsapp' },
+
+    ],
     selectedService: null,
     cart: {
         serviceId: null,
@@ -61,62 +83,12 @@ const DOM = {
 };
 
 // ============================================
-// 1. FETCH SERVICES - VIA PROXY VERCEL
+// 1. LOAD SERVICES (LANGSUNG DARI STATE)
 // ============================================
-async function fetchServices() {
-    try {
-        DOM.loadingServices.style.display = 'block';
-        DOM.servicesGrid.innerHTML = '';
-        
-        // Panggil proxy Vercel dengan parameter action
-        const url = `${CONFIG.API_URL}?action=services`;
-        console.log('📤 Fetching from proxy:', url);
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        console.log('📦 Response from proxy:', result);
-        
-        // Cek status dari PusatPanelSMM (via proxy)
-        if (result.status === true && Array.isArray(result.data)) {
-            state.services = result.data;
-            renderServices(result.data);
-            populateSelect(result.data);
-            showToast(`✅ ${result.data.length} layanan dimuat`, 'success');
-        } else {
-            throw new Error(result.data?.msg || result.message || 'Gagal memuat data');
-        }
-        
-    } catch (error) {
-        console.error('❌ Error:', error);
-        DOM.servicesGrid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                <i class="fas fa-exclamation-circle" style="font-size: 40px; color: #EF4444;"></i>
-                <h3 style="margin: 12px 0; color: #991B1B;">Gagal Memuat Layanan</h3>
-                <p style="color: #64748B; margin-bottom: 8px;">${error.message}</p>
-                <details style="margin: 12px auto; text-align: left; max-width: 400px; background: #F1F5F9; padding: 12px; border-radius: 8px;">
-                    <summary style="cursor: pointer; font-weight: 600;">🔍 Detail</summary>
-                    <pre style="font-size: 12px; color: #475569; white-space: pre-wrap; word-break: break-all; margin-top: 8px;">${error.stack || error.message}</pre>
-                </details>
-                <button onclick="fetchServices()" class="btn btn-primary" style="margin-top: 16px;">
-                    <i class="fas fa-sync"></i> Coba Lagi
-                </button>
-            </div>
-        `;
-    } finally {
-        DOM.loadingServices.style.display = 'none';
-    }
-}
-
-// ============================================
-// 2. RENDER SERVICES
-// ============================================
-function renderServices(services) {
-    if (!services || services.length === 0) {
+function loadServices() {
+    DOM.loadingServices.style.display = 'none';
+    
+    if (state.services.length === 0) {
         DOM.servicesGrid.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
                 <p>Tidak ada layanan tersedia</p>
@@ -125,20 +97,27 @@ function renderServices(services) {
         return;
     }
     
+    renderServices(state.services);
+    populateSelect(state.services);
+}
+
+// ============================================
+// 2. RENDER SERVICES (Grid Cards)
+// ============================================
+function renderServices(services) {
     DOM.servicesGrid.innerHTML = services.map(service => `
         <div class="service-card" data-service-id="${service.id}" onclick="selectService('${service.id}')">
             <div class="service-icon">
-                <i class="fas fa-${getServiceIcon(service.category || 'social')}"></i>
+                <i class="fab fa-${getServiceIcon(service.category)}"></i>
             </div>
-            <div class="service-name">${service.name || 'Layanan'}</div>
-            <div class="service-category">${service.category || 'Sosial Media'}</div>
+            <div class="service-name">${service.name}</div>
+            <div class="service-category">${capitalize(service.category)}</div>
             <div class="service-price">
-                Rp ${formatNumber(service.price || 0)}
+                Rp ${formatNumber(service.price)}
                 <small>/unit</small>
             </div>
-            <div class="service-min">Min. Order: ${service.min || 0}</div>
+            <div class="service-min">Min. Order: ${service.min}</div>
             ${service.max ? `<div class="service-max" style="font-size:13px;color:var(--gray-500);">Max. Order: ${service.max}</div>` : ''}
-            ${service.note ? `<div class="service-note" style="font-size:12px;color:var(--gray-400);margin-top:8px;">${service.note}</div>` : ''}
         </div>
     `).join('');
 }
@@ -147,13 +126,11 @@ function renderServices(services) {
 // 3. POPULATE SELECT
 // ============================================
 function populateSelect(services) {
-    if (!services || services.length === 0) return;
-    
     DOM.serviceSelect.innerHTML = `
         <option value="">-- Pilih layanan --</option>
         ${services.map(service => `
             <option value="${service.id}">
-                ${service.name} - Rp ${formatNumber(service.price || 0)}/unit
+                ${service.name} - Rp ${formatNumber(service.price)}/unit
             </option>
         `).join('')}
     `;
@@ -167,22 +144,17 @@ function selectService(serviceId) {
     if (!service) return;
     
     state.selectedService = service;
-    
     DOM.serviceSelect.value = serviceId;
     
-    const price = service.price || 0;
-    const min = service.min || 0;
-    const max = service.max || Infinity;
+    DOM.pricePerUnit.textContent = `Rp ${formatNumber(service.price)}`;
+    DOM.minOrder.textContent = service.min;
+    DOM.maxOrder.textContent = service.max || '∞';
+    DOM.qtyMinDisplay.textContent = service.min;
     
-    DOM.pricePerUnit.textContent = `Rp ${formatNumber(price)}`;
-    DOM.minOrder.textContent = min;
-    DOM.maxOrder.textContent = max === Infinity ? '∞' : max;
-    DOM.qtyMinDisplay.textContent = min;
-    
-    const minQty = min || 1;
+    const minQty = service.min || 1;
     DOM.quantityInput.value = minQty;
     DOM.quantityInput.min = minQty;
-    if (max !== Infinity) DOM.quantityInput.max = max;
+    if (service.max) DOM.quantityInput.max = service.max;
     state.cart.quantity = minQty;
     
     document.querySelectorAll('.service-card').forEach(card => {
@@ -244,8 +216,7 @@ function calculateTotal() {
     }
     
     const qty = parseInt(DOM.quantityInput.value) || 0;
-    const price = service.price || 0;
-    const total = qty * price;
+    const total = qty * service.price;
     
     state.cart.totalPrice = total;
     DOM.totalAmount.textContent = `Rp ${formatNumber(total)}`;
@@ -277,7 +248,7 @@ DOM.orderForm.addEventListener('submit', (e) => {
         return;
     }
     
-    const total = quantity * (service.price || 0);
+    const total = quantity * service.price;
     
     DOM.modalService.textContent = service.name;
     DOM.modalTarget.textContent = target;
@@ -443,14 +414,13 @@ function getServiceIcon(category) {
     const icons = {
         'instagram': 'fa-instagram',
         'tiktok': 'fa-tiktok',
-        'youtube': 'fa-youtube',
-        'facebook': 'fa-facebook',
-        'twitter': 'fa-twitter',
-        'telegram': 'fa-telegram',
-        'spotify': 'fa-spotify',
-        'social': 'fa-share-alt'
+        'whatsapp': 'fa-whatsapp'
     };
-    return icons[category?.toLowerCase()] || 'fa-share-alt';
+    return icons[category] || 'fa-share-alt';
+}
+
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 // ============================================
@@ -490,7 +460,7 @@ DOM.serviceSelect.addEventListener('change', (e) => {
 // 16. INIT
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
-    fetchServices();
+    loadServices();
     document.querySelectorAll('.dana-number').forEach(el => {
         el.textContent = CONFIG.DANA_NUMBER;
     });
