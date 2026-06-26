@@ -2,12 +2,12 @@
 // KONFIGURASI
 // ============================================
 const CONFIG = {
-    DANA_NUMBER: '085216704274', // Ganti dengan nomor DANA lo
+    DANA_NUMBER: '085216704274', // <-- GANTI INI
     ADMIN_PASSWORD: 'WAnzSHOP0812'
 };
 
 // ============================================
-// STATE - DATA LAYANAN (HARGA TERBARU)
+// STATE - DATA LAYANAN
 // ============================================
 let state = {
     services: [
@@ -83,7 +83,7 @@ const DOM = {
 };
 
 // ============================================
-// 1. LOAD SERVICES
+// LOAD SERVICES
 // ============================================
 function loadServices() {
     DOM.loadingServices.style.display = 'none';
@@ -92,7 +92,7 @@ function loadServices() {
 }
 
 // ============================================
-// 2. RENDER SERVICES
+// RENDER SERVICES
 // ============================================
 function renderServices(services) {
     if (!services || services.length === 0) {
@@ -102,7 +102,9 @@ function renderServices(services) {
     
     DOM.servicesGrid.innerHTML = services.map(service => `
         <div class="service-card" data-service-id="${service.id}" onclick="selectService('${service.id}')">
-            <div class="service-icon" style="background-image: url('assets/icons/${service.category}.png');"></div>
+            <div class="service-icon">
+                <i class="fab fa-${getServiceIcon(service.category)}"></i>
+            </div>
             <div class="service-name">${service.name}</div>
             <div class="service-category">${capitalize(service.category)}</div>
             <div class="service-price">
@@ -116,71 +118,51 @@ function renderServices(services) {
 }
 
 // ============================================
-// 3. POPULATE SELECT
+// POPULATE SELECT
 // ============================================
 function populateSelect(services) {
     if (!services || services.length === 0) return;
-    
     DOM.serviceSelect.innerHTML = `
         <option value="">-- Pilih layanan --</option>
-        ${services.map(service => `
-            <option value="${service.id}">
-                ${service.name} - Rp ${formatNumber(service.price)}/unit
-            </option>
-        `).join('')}
+        ${services.map(s => `<option value="${s.id}">${s.name} - Rp ${formatNumber(s.price)}/unit</option>`).join('')}
     `;
 }
 
 // ============================================
-// 4. SELECT SERVICE
+// SELECT SERVICE
 // ============================================
 function selectService(serviceId) {
     const service = state.services.find(s => s.id == serviceId);
     if (!service) return;
-    
     state.selectedService = service;
     DOM.serviceSelect.value = serviceId;
-    
     DOM.pricePerUnit.textContent = `Rp ${formatNumber(service.price)}`;
     DOM.minOrder.textContent = service.min;
     DOM.maxOrder.textContent = service.max || '∞';
     DOM.qtyMinDisplay.textContent = service.min;
-    
     const minQty = service.min || 1;
     DOM.quantityInput.value = minQty;
     DOM.quantityInput.min = minQty;
     if (service.max) DOM.quantityInput.max = service.max;
     state.cart.quantity = minQty;
-    
-    document.querySelectorAll('.service-card').forEach(card => {
-        card.classList.toggle('selected', card.dataset.serviceId == serviceId);
-    });
-    
+    document.querySelectorAll('.service-card').forEach(c => c.classList.toggle('selected', c.dataset.serviceId == serviceId));
     calculateTotal();
     document.getElementById('orderSection').scrollIntoView({ behavior: 'smooth' });
 }
 
 // ============================================
-// 5. HANDLE QUANTITY
+// QUANTITY HANDLERS
 // ============================================
 DOM.qtyMinus.addEventListener('click', () => {
     const current = parseInt(DOM.quantityInput.value) || 0;
     const min = parseInt(DOM.quantityInput.min) || 1;
-    if (current > min) {
-        DOM.quantityInput.value = current - 1;
-        state.cart.quantity = current - 1;
-        calculateTotal();
-    }
+    if (current > min) { DOM.quantityInput.value = current - 1; state.cart.quantity = current - 1; calculateTotal(); }
 });
 
 DOM.qtyPlus.addEventListener('click', () => {
     const current = parseInt(DOM.quantityInput.value) || 0;
     const max = parseInt(DOM.quantityInput.max) || Infinity;
-    if (current < max) {
-        DOM.quantityInput.value = current + 1;
-        state.cart.quantity = current + 1;
-        calculateTotal();
-    }
+    if (current < max) { DOM.quantityInput.value = current + 1; state.cart.quantity = current + 1; calculateTotal(); }
 });
 
 DOM.quantityInput.addEventListener('change', () => {
@@ -195,67 +177,48 @@ DOM.quantityInput.addEventListener('change', () => {
 });
 
 // ============================================
-// 6. CALCULATE TOTAL
+// CALCULATE TOTAL
 // ============================================
 function calculateTotal() {
     const service = state.selectedService;
-    if (!service) {
-        DOM.totalAmount.textContent = 'Rp 0';
-        return;
-    }
-    
+    if (!service) { DOM.totalAmount.textContent = 'Rp 0'; return; }
     const qty = parseInt(DOM.quantityInput.value) || 0;
     const total = qty * service.price;
-    
     state.cart.totalPrice = total;
     DOM.totalAmount.textContent = `Rp ${formatNumber(total)}`;
 }
 
 // ============================================
-// 7. HANDLE ORDER FORM SUBMIT
+// ORDER FORM SUBMIT
 // ============================================
 DOM.orderForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
     const serviceId = DOM.serviceSelect.value;
     const target = DOM.targetInput.value.trim();
     const quantity = parseInt(DOM.quantityInput.value) || 0;
     
-    if (!serviceId) {
-        showToast('Pilih layanan terlebih dahulu!', 'error');
-        return;
-    }
-    
-    if (!target) {
-        showToast('Masukkan username/link akun!', 'error');
-        return;
-    }
+    if (!serviceId) { showToast('Pilih layanan!', 'error'); return; }
+    if (!target) { showToast('Masukkan target akun!', 'error'); return; }
     
     const service = state.services.find(s => s.id == serviceId);
-    if (!service) {
-        showToast('Layanan tidak ditemukan!', 'error');
-        return;
-    }
+    if (!service) { showToast('Layanan tidak ditemukan!', 'error'); return; }
     
     const total = quantity * service.price;
-    
     DOM.modalService.textContent = service.name;
     DOM.modalTarget.textContent = target;
     DOM.modalQuantity.textContent = quantity;
     DOM.modalTotal.textContent = `Rp ${formatNumber(total)}`;
     DOM.modalAmount.textContent = `Rp ${formatNumber(total)}`;
-    
     DOM.hiddenService.value = serviceId;
     DOM.hiddenTarget.value = target;
     DOM.hiddenQuantity.value = quantity;
     DOM.hiddenPrice.value = total;
-    
     DOM.paymentModal.classList.add('active');
     document.body.style.overflow = 'hidden';
 });
 
 // ============================================
-// 8. CLOSE MODAL
+// CLOSE MODAL
 // ============================================
 function closeModal() {
     DOM.paymentModal.classList.remove('active');
@@ -264,47 +227,27 @@ function closeModal() {
     DOM.proofImage.value = '';
     DOM.senderName.value = '';
 }
-
 DOM.modalClose.addEventListener('click', closeModal);
-
-DOM.paymentModal.addEventListener('click', (e) => {
-    if (e.target === DOM.paymentModal) {
-        closeModal();
-    }
-});
+DOM.paymentModal.addEventListener('click', (e) => { if (e.target === DOM.paymentModal) closeModal(); });
 
 // ============================================
-// 9. HANDLE PROOF IMAGE UPLOAD
+// PROOF IMAGE UPLOAD
 // ============================================
 DOM.proofImage.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
-    if (file.size > 2 * 1024 * 1024) {
-        showToast('Ukuran file terlalu besar! Maksimal 2MB.', 'error');
-        DOM.proofImage.value = '';
-        return;
-    }
-    
-    if (!file.type.startsWith('image/')) {
-        showToast('File harus berupa gambar!', 'error');
-        DOM.proofImage.value = '';
-        return;
-    }
-    
+    if (file.size > 2 * 1024 * 1024) { showToast('Maksimal 2MB!', 'error'); DOM.proofImage.value = ''; return; }
+    if (!file.type.startsWith('image/')) { showToast('Harus gambar!', 'error'); DOM.proofImage.value = ''; return; }
     const reader = new FileReader();
-    reader.onload = (e) => {
-        DOM.imagePreview.innerHTML = `<img src="${e.target.result}" alt="Bukti Transfer" />`;
-    };
+    reader.onload = (e) => DOM.imagePreview.innerHTML = `<img src="${e.target.result}" alt="Bukti" />`;
     reader.readAsDataURL(file);
 });
 
 // ============================================
-// 10. HANDLE CONFIRMATION FORM
+// CONFIRMATION FORM
 // ============================================
 DOM.confirmationForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
     const senderName = DOM.senderName.value.trim();
     const proofFile = DOM.proofImage.files[0];
     const serviceId = DOM.hiddenService.value;
@@ -312,65 +255,39 @@ DOM.confirmationForm.addEventListener('submit', (e) => {
     const quantity = parseInt(DOM.hiddenQuantity.value);
     const total = parseInt(DOM.hiddenPrice.value);
     
-    if (!senderName) {
-        showToast('Masukkan nama pengirim!', 'error');
-        return;
-    }
-    
-    if (!proofFile) {
-        showToast('Upload bukti transfer!', 'error');
-        return;
-    }
+    if (!senderName) { showToast('Masukkan nama pengirim!', 'error'); return; }
+    if (!proofFile) { showToast('Upload bukti transfer!', 'error'); return; }
     
     const reader = new FileReader();
     reader.onload = (e) => {
-        const proofImage = e.target.result;
-        const service = state.services.find(s => s.id == serviceId);
-        
         const order = {
             id: Date.now(),
             orderId: `#SMB-${Date.now().toString().slice(-6)}`,
-            serviceId: serviceId,
-            serviceName: service?.name || 'Unknown',
-            target: target,
-            quantity: quantity,
-            price: total,
-            status: 'pending',
-            payment: {
-                senderName: senderName,
-                proofImage: proofImage,
-                transferDate: new Date().toISOString()
-            },
+            serviceId, serviceName: state.services.find(s => s.id == serviceId)?.name || 'Unknown',
+            target, quantity, price: total, status: 'pending',
+            payment: { senderName, proofImage: e.target.result, transferDate: new Date().toISOString() },
             createdAt: new Date().toISOString()
         };
-        
         saveOrder(order);
-        
         closeModal();
         DOM.orderForm.reset();
         DOM.totalAmount.textContent = 'Rp 0';
         DOM.imagePreview.innerHTML = '';
         state.cart = { serviceId: null, target: '', quantity: 0, totalPrice: 0 };
-        
-        showToast('✅ Pesanan berhasil dibuat! Cek status di halaman Tracking.', 'success');
-        
-        document.querySelectorAll('.service-card').forEach(card => {
-            card.classList.remove('selected');
-        });
+        showToast('✅ Pesanan berhasil! Cek di Tracking.', 'success');
+        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
         DOM.serviceSelect.value = '';
         DOM.pricePerUnit.textContent = 'Rp 0';
         DOM.minOrder.textContent = '0';
         DOM.maxOrder.textContent = '0';
         DOM.qtyMinDisplay.textContent = '0';
-        
-        // Pindah ke halaman tracking
         switchTab('tracking');
     };
     reader.readAsDataURL(proofFile);
 });
 
 // ============================================
-// 11. SAVE ORDER
+// SAVE & GET ORDERS
 // ============================================
 function saveOrder(order) {
     let orders = JSON.parse(localStorage.getItem('orders')) || [];
@@ -378,41 +295,23 @@ function saveOrder(order) {
     localStorage.setItem('orders', JSON.stringify(orders));
 }
 
-// ============================================
-// 12. GET ORDERS
-// ============================================
 function getOrders() {
     return JSON.parse(localStorage.getItem('orders')) || [];
 }
 
 // ============================================
-// 13. TRACKING ORDERS
+// TRACKING ORDERS
 // ============================================
 function trackOrders(username) {
     if (!username) {
-        DOM.trackingOrders.innerHTML = `
-            <div class="tracking-empty">
-                <i class="fas fa-search"></i>
-                <p>Masukkan username untuk melacak pesanan</p>
-            </div>
-        `;
+        DOM.trackingOrders.innerHTML = `<div class="tracking-empty"><i class="fas fa-search"></i><p>Masukkan username untuk melacak pesanan</p></div>`;
         return;
     }
-    
-    const orders = getOrders().filter(o => 
-        o.target?.toLowerCase().includes(username.toLowerCase())
-    );
-    
+    const orders = getOrders().filter(o => o.target?.toLowerCase().includes(username.toLowerCase()));
     if (orders.length === 0) {
-        DOM.trackingOrders.innerHTML = `
-            <div class="tracking-empty">
-                <i class="fas fa-inbox"></i>
-                <p>Tidak ada pesanan ditemukan untuk username ini</p>
-            </div>
-        `;
+        DOM.trackingOrders.innerHTML = `<div class="tracking-empty"><i class="fas fa-inbox"></i><p>Tidak ada pesanan ditemukan</p></div>`;
         return;
     }
-    
     DOM.trackingOrders.innerHTML = orders.sort((a, b) => b.id - a.id).map(order => `
         <div class="tracking-card">
             <div class="tracking-header">
@@ -424,175 +323,105 @@ function trackOrders(username) {
                 <div class="tracking-target"><i class="fas fa-user"></i> ${order.target}</div>
                 <div class="tracking-qty">Qty: ${order.quantity} | Total: Rp ${formatNumber(order.price)}</div>
                 <div class="tracking-status status-${order.status}">
-                    <i class="fas ${getStatusIcon(order.status)}"></i>
-                    ${capitalize(order.status)}
+                    <i class="fas ${getStatusIcon(order.status)}"></i> ${capitalize(order.status)}
                 </div>
-                ${order.status === 'rejected' && order.reason ? `
-                    <div class="tracking-reason">
-                        <i class="fas fa-info-circle"></i> ${order.reason}
-                    </div>
-                ` : ''}
+                ${order.status === 'rejected' && order.reason ? `<div class="tracking-reason"><i class="fas fa-info-circle"></i> ${order.reason}</div>` : ''}
             </div>
         </div>
     `).join('');
 }
 
 // ============================================
-// 14. SEARCH TRACKING
+// SEARCH TRACKING
 // ============================================
 DOM.trackingSearchBtn.addEventListener('click', () => {
     const username = DOM.trackingTargetInput.value.trim();
     trackOrders(username);
 });
-
-DOM.trackingTargetInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        DOM.trackingSearchBtn.click();
-    }
-});
+DOM.trackingTargetInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') DOM.trackingSearchBtn.click(); });
 
 // ============================================
-// 15. SWITCH TAB
+// SWITCH TAB
 // ============================================
 function switchTab(tab) {
     state.currentPage = tab;
-    
-    // Sembunyikan semua section
-    document.querySelectorAll('.page-section').forEach(section => {
-        section.style.display = 'none';
-    });
-    
-    // Tampilkan section yang dipilih
-    const targetSection = document.getElementById(`${tab}Section`);
-    if (targetSection) {
-        targetSection.style.display = 'block';
-    }
-    
-    // Update active class di nav
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.toggle('active', link.dataset.tab === tab);
-    });
-    
-    // Kalo tracking, load data
-    if (tab === 'tracking') {
-        DOM.trackingContainer.style.display = 'block';
-        trackOrders(DOM.trackingTargetInput.value.trim());
-    } else {
-        DOM.trackingContainer.style.display = 'none';
-    }
+    document.querySelectorAll('.page-section').forEach(section => section.style.display = 'none');
+    document.getElementById(`${tab}Section`).style.display = 'block';
+    document.querySelectorAll('.nav-link').forEach(link => link.classList.toggle('active', link.dataset.tab === tab));
+    if (tab === 'tracking') { trackOrders(DOM.trackingTargetInput.value.trim()); }
 }
 
 // ============================================
-// 16. NAV LINKS
+// NAV LINKS
 // ============================================
 DOM.navLinks.forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
         const tab = link.dataset.tab;
-        if (tab) {
-            switchTab(tab);
-        }
+        if (tab) switchTab(tab);
         DOM.navbarMenu.classList.remove('active');
     });
 });
 
 // ============================================
-// 17. TOAST
+// TOAST
 // ============================================
 function showToast(message, type = 'success') {
     DOM.toastMessage.textContent = message;
-    DOM.toast.className = 'toast show';
-    if (type === 'error') {
-        DOM.toast.classList.add('toast-error');
-    } else {
-        DOM.toast.classList.remove('toast-error');
-    }
-    
+    DOM.toast.className = `toast show ${type === 'error' ? 'toast-error' : ''}`;
     clearTimeout(DOM.toast._timeout);
-    DOM.toast._timeout = setTimeout(() => {
-        DOM.toast.classList.remove('show');
-    }, 4000);
+    DOM.toast._timeout = setTimeout(() => DOM.toast.classList.remove('show'), 4000);
 }
 
 // ============================================
-// 18. UTILITY FUNCTIONS
+// UTILITY
 // ============================================
-function formatNumber(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-}
+function formatNumber(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
 
 function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    const d = new Date(dateString);
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
+function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
 
 function getStatusIcon(status) {
-    const icons = {
-        pending: 'fa-clock',
-        processed: 'fa-spinner fa-spin',
-        completed: 'fa-check-circle',
-        rejected: 'fa-times-circle'
-    };
+    const icons = { pending: 'fa-clock', processed: 'fa-spinner fa-spin', completed: 'fa-check-circle', rejected: 'fa-times-circle' };
     return icons[status] || 'fa-circle';
 }
 
 function getServiceIcon(category) {
-    const icons = {
-        'instagram': 'fa-instagram',
-        'tiktok': 'fa-tiktok',
-        'whatsapp': 'fa-whatsapp'
-    };
+    const icons = { instagram: 'fa-instagram', tiktok: 'fa-tiktok', whatsapp: 'fa-whatsapp' };
     return icons[category] || 'fa-share-alt';
 }
 
 // ============================================
-// 19. HAMBURGER
+// HAMBURGER
 // ============================================
-DOM.hamburger.addEventListener('click', () => {
-    DOM.navbarMenu.classList.toggle('active');
-});
+DOM.hamburger.addEventListener('click', () => DOM.navbarMenu.classList.toggle('active'));
 
 // ============================================
-// 20. SELECT CHANGE
+// SELECT CHANGE
 // ============================================
 DOM.serviceSelect.addEventListener('change', (e) => {
-    const serviceId = e.target.value;
-    if (serviceId) {
-        selectService(serviceId);
-    } else {
+    const id = e.target.value;
+    if (id) selectService(id);
+    else {
         state.selectedService = null;
         DOM.pricePerUnit.textContent = 'Rp 0';
         DOM.minOrder.textContent = '0';
         DOM.maxOrder.textContent = '0';
         DOM.qtyMinDisplay.textContent = '0';
         DOM.totalAmount.textContent = 'Rp 0';
-        document.querySelectorAll('.service-card').forEach(card => {
-            card.classList.remove('selected');
-        });
+        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
     }
 });
 
 // ============================================
-// 21. INIT
+// INIT
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOM Ready!');
     loadServices();
-    
-    document.querySelectorAll('.dana-number').forEach(el => {
-        el.textContent = CONFIG.DANA_NUMBER;
-    });
-    
-    // Default ke services
+    document.querySelectorAll('.dana-number').forEach(el => el.textContent = CONFIG.DANA_NUMBER);
     switchTab('services');
 });
