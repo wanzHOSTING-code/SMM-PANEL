@@ -1856,3 +1856,300 @@ body {
         gap: 4px;
     }
 }
+
+/* =========================================== */
+/* PERBAIKAN ADMIN MODAL & TRACKING */
+/* ============================================ */
+
+/* ---------- ADMIN MODAL ---------- */
+.proof-image-container {
+    text-align: center;
+    margin-bottom: 16px;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.proof-image-container img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    object-fit: contain;
+    background: white;
+}
+
+.proof-details {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.proof-details p {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    margin: 0;
+    border-bottom: 1px dashed #e2e8f0;
+    font-size: 14px;
+}
+
+.proof-details p:last-child {
+    border-bottom: none;
+}
+
+.proof-details strong {
+    color: #475569;
+    font-weight: 600;
+}
+
+.proof-details span {
+    color: #0f172a;
+    font-weight: 500;
+    text-align: right;
+    max-width: 60%;
+    word-break: break-word;
+}
+
+/* Tombol status di admin */
+.proof-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.proof-actions .btn {
+    padding: 10px 8px;
+    font-size: 13px;
+    border-radius: 8px;
+    justify-content: center;
+    width: 100%;
+}
+
+.proof-actions .btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+.proof-actions .btn-warning:hover {
+    background: #d97706;
+}
+
+.proof-actions .btn-primary {
+    background: #4f46e5;
+    color: white;
+}
+.proof-actions .btn-primary:hover {
+    background: #4338ca;
+}
+
+.proof-actions .btn-success {
+    background: #22c55e;
+    color: white;
+}
+.proof-actions .btn-success:hover {
+    background: #16a34a;
+}
+
+.proof-actions .btn-danger {
+    background: #ef4444;
+    color: white;
+}
+.proof-actions .btn-danger:hover {
+    background: #dc2626;
+}
+
+/* Alasan tolak */
+.proof-reject-reason {
+    margin-top: 12px;
+    padding: 12px;
+    background: #fef2f2;
+    border-radius: 8px;
+    border: 1px solid #fecaca;
+}
+
+.proof-reject-reason label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #dc2626;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.proof-reject-reason textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #fecaca;
+    border-radius: 6px;
+    font-family: var(--font);
+    font-size: 14px;
+    resize: vertical;
+    min-height: 50px;
+    background: white;
+}
+
+.proof-reject-reason textarea:focus {
+    outline: none;
+    border-color: #ef4444;
+}
+
+/* ---------- TRACKING PEMBELI ---------- */
+.tracking-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.tracking-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.tracking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 12px;
+}
+
+.tracking-id {
+    font-weight: 700;
+    color: #4f46e5;
+    font-size: 14px;
+    background: #eef2ff;
+    padding: 4px 14px;
+    border-radius: 20px;
+}
+
+.tracking-date {
+    font-size: 13px;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 4px 14px;
+    border-radius: 20px;
+}
+
+.tracking-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tracking-service {
+    font-weight: 600;
+    font-size: 16px;
+    color: #0f172a;
+}
+
+.tracking-target {
+    font-size: 14px;
+    color: #475569;
+    background: #f8fafc;
+    padding: 4px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    width: fit-content;
+}
+
+.tracking-target i {
+    color: #4f46e5;
+    margin-right: 6px;
+}
+
+.tracking-qty {
+    font-size: 14px;
+    color: #475569;
+    font-weight: 500;
+}
+
+.tracking-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 13px;
+    margin-top: 4px;
+    width: fit-content;
+    border: 2px solid transparent;
+}
+
+.tracking-status.status-pending {
+    background: #fef3c7;
+    color: #f59e0b;
+    border-color: #f59e0b;
+}
+
+.tracking-status.status-processed {
+    background: #eef2ff;
+    color: #4f46e5;
+    border-color: #4f46e5;
+    animation: pulse-status 1.5s infinite;
+}
+
+.tracking-status.status-completed {
+    background: #dcfce7;
+    color: #22c55e;
+    border-color: #22c55e;
+}
+
+.tracking-status.status-rejected {
+    background: #fee2e2;
+    color: #ef4444;
+    border-color: #ef4444;
+}
+
+@keyframes pulse-status {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(0.97); }
+}
+
+.tracking-reason {
+    margin-top: 8px;
+    padding: 8px 14px;
+    background: #fee2e2;
+    border-radius: 6px;
+    color: #ef4444;
+    font-size: 13px;
+    border-left: 3px solid #ef4444;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+    .proof-actions {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .proof-details p {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+    
+    .proof-details span {
+        text-align: left;
+        max-width: 100%;
+    }
+    
+    .tracking-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .proof-actions {
+        grid-template-columns: 1fr;
+    }
+}
