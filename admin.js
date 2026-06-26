@@ -2,7 +2,7 @@
 // KONFIGURASI
 // ============================================
 const CONFIG = {
-    ADMIN_PASSWORD: 'admin123'
+    ADMIN_PASSWORD: 'WAnzSHOP0812'
 };
 
 // ============================================
