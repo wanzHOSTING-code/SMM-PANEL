@@ -371,6 +371,7 @@ DOM.confirmationForm.addEventListener('submit', (e) => {
             id: Date.now(),
             serviceId: serviceId,
             serviceName: service?.name || 'Unknown',
+            category: service?.category || 'social', // <-- TAMBAHAN (FIX)
             target: target,
             quantity: quantity,
             price: total,
@@ -539,7 +540,7 @@ function trackOrders(username) {
             </div>
             <div class="tracking-body">
                 <div class="tracking-service">${order.serviceName}</div>
-                <div class="tracking-target"><i class="fas fa-user"></i> ${order.target}</div>
+                <div class="tracking-target"><i class="fab ${getServiceIcon(order.category || 'social')}"></i> ${order.target}</div> <!-- <-- PERUBAHAN -->
                 <div class="tracking-qty">Qty: ${order.quantity} | Total: Rp ${formatNumber(order.price)}</div>
                 <div class="tracking-status status-${order.status}">
                     <i class="fas ${getTrackingStatusIcon(order.status)}"></i>
