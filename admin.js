@@ -65,12 +65,27 @@ function checkAuth() {
 // 2. LOAD ORDERS
 // ============================================
 function loadOrders() {
-    state.orders = JSON.parse(localStorage.getItem('orders')) || [];
-    updateStats();
-    renderRecentOrders();
-    renderAllOrders();
-    renderHistory();
-    updatePendingBadge();
+    try {
+        const data = localStorage.getItem('orders');
+        console.log('📦 Raw orders data:', data);
+        
+        if (data) {
+            state.orders = JSON.parse(data);
+        } else {
+            state.orders = [];
+        }
+        
+        console.log('📦 Orders loaded:', state.orders.length);
+        updateStats();
+        renderRecentOrders();
+        renderAllOrders();
+        renderHistory();
+        updatePendingBadge();
+    } catch (e) {
+        console.error('❌ Error loading orders:', e);
+        state.orders = [];
+        showToast('Gagal memuat data pesanan!', 'error');
+    }
 }
 
 // ============================================
@@ -220,7 +235,10 @@ function updatePendingBadge() {
 // ============================================
 function openProofModal(orderId) {
     const order = state.orders.find(o => o.id == orderId);
-    if (!order) return;
+    if (!order) {
+        showToast('❌ Pesanan tidak ditemukan!', 'error');
+        return;
+    }
     
     state.currentOrderId = orderId;
     
@@ -250,7 +268,6 @@ function closeProofModal() {
     document.body.style.overflow = '';
     state.currentOrderId = null;
     
-    // Reset alasan tolak
     const reasonContainer = document.getElementById('proofRejectReasonContainer');
     if (reasonContainer) {
         reasonContainer.style.display = 'none';
@@ -268,42 +285,39 @@ DOM.proofModal.addEventListener('click', (e) => {
 });
 
 // ============================================
-// 11. UPDATE ORDER STATUS (BISA BERKALI-KALI)
+// 11. UPDATE ORDER STATUS
 // ============================================
 function updateOrderStatus(orderId, status, reason = '') {
-    let orders = JSON.parse(localStorage.getItem('orders')) || [];
-    const index = orders.findIndex(o => o.id == orderId);
-    
-    if (index !== -1) {
-        // Update status
-        orders[index].status = status;
+    try {
+        let orders = JSON.parse(localStorage.getItem('orders')) || [];
+        const index = orders.findIndex(o => o.id == orderId);
         
-        // Kalo ditolak, simpen alasan
-        if (status === 'rejected' && reason) {
-            orders[index].reason = reason;
+        if (index !== -1) {
+            orders[index].status = status;
+            
+            if (status === 'rejected' && reason) {
+                orders[index].reason = reason;
+            } else {
+                delete orders[index].reason;
+            }
+            
+            localStorage.setItem('orders', JSON.stringify(orders));
+            loadOrders();
+            closeProofModal();
+            
+            const statusMap = {
+                'pending': '⏳ Pending',
+                'processed': '🔄 Diproses',
+                'completed': '✅ Selesai',
+                'rejected': '❌ Ditolak'
+            };
+            showToast(`Status berhasil diubah menjadi ${statusMap[status] || status}`, 'success');
         } else {
-            delete orders[index].reason;
+            showToast('❌ Pesanan tidak ditemukan!', 'error');
         }
-        
-        // Simpan ke localStorage
-        localStorage.setItem('orders', JSON.stringify(orders));
-        
-        // Reload semua data
-        loadOrders();
-        
-        // Tutup modal
-        closeProofModal();
-        
-        // Notifikasi
-        const statusMap = {
-            'pending': '⏳ Pending',
-            'processed': '🔄 Diproses',
-            'completed': '✅ Selesai',
-            'rejected': '❌ Ditolak'
-        };
-        showToast(`Status berhasil diubah menjadi ${statusMap[status] || status}`, 'success');
-    } else {
-        showToast('❌ Pesanan tidak ditemukan!', 'error');
+    } catch (e) {
+        console.error('❌ Error update order:', e);
+        showToast('❌ Gagal mengupdate status!', 'error');
     }
 }
 
@@ -318,14 +332,11 @@ DOM.filterStatus.addEventListener('change', renderAllOrders);
 DOM.tabLinks.forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
-        
         DOM.tabLinks.forEach(l => l.classList.remove('active'));
         DOM.tabContents.forEach(c => c.classList.remove('active'));
-        
         link.classList.add('active');
         const tabId = link.dataset.tab;
         document.getElementById(`tab-${tabId}`).classList.add('active');
-        
         const titles = {
             dashboard: 'Dashboard',
             orders: 'Pesanan Masuk',
@@ -333,7 +344,6 @@ DOM.tabLinks.forEach(link => {
             settings: 'Pengaturan'
         };
         DOM.pageTitle.textContent = titles[tabId] || 'Dashboard';
-        
         DOM.adminSidebar.classList.remove('active');
     });
 });
@@ -358,7 +368,6 @@ DOM.adminLogout.addEventListener('click', () => {
 // ============================================
 DOM.settingsForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
     const settings = {};
     if (DOM.adminPassword.value.trim()) {
         settings.adminPassword = DOM.adminPassword.value.trim();
@@ -366,7 +375,6 @@ DOM.settingsForm.addEventListener('submit', (e) => {
     if (DOM.danaNumber.value.trim()) {
         settings.danaNumber = DOM.danaNumber.value.trim();
     }
-    
     localStorage.setItem('adminSettings', JSON.stringify(settings));
     showToast('Pengaturan berhasil disimpan!', 'success');
     DOM.adminPassword.value = '';
@@ -376,9 +384,13 @@ DOM.settingsForm.addEventListener('submit', (e) => {
 // 17. LOAD SETTINGS
 // ============================================
 function loadSettings() {
-    const settings = JSON.parse(localStorage.getItem('adminSettings')) || {};
-    if (settings.danaNumber) {
-        DOM.danaNumber.value = settings.danaNumber;
+    try {
+        const settings = JSON.parse(localStorage.getItem('adminSettings')) || {};
+        if (settings.danaNumber) {
+            DOM.danaNumber.value = settings.danaNumber;
+        }
+    } catch (e) {
+        console.error('❌ Error loading settings:', e);
     }
 }
 
@@ -406,14 +418,18 @@ function formatNumber(num) {
 }
 
 function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (e) {
+        return dateString || '-';
+    }
 }
 
 function showToast(message, type = 'success') {
@@ -460,9 +476,8 @@ function showToast(message, type = 'success') {
 }
 
 // ============================================
-// 20. EVENT LISTENER TOMBOL STATUS ADMIN
+// 20. SETUP STATUS BUTTONS
 // ============================================
-function setupStatusButtons() {
 function setupStatusButtons() {
     // Tombol Pending
     const pendingBtn = document.getElementById('proofPending');
@@ -500,7 +515,7 @@ function setupStatusButtons() {
         });
     }
     
-    // ========== TOMBOL TOLAK (FIX) ==========
+    // Tombol Tolak (FIX)
     const rejectBtn = document.getElementById('proofRejected');
     if (rejectBtn) {
         rejectBtn.addEventListener('click', function(e) {
@@ -538,11 +553,24 @@ function setupStatusButtons() {
 // ============================================
 // 21. INIT
 // ============================================
-document.addEventListener('DOMContentLoaded', () => {
-    checkAuth();
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Admin Loaded!');
+    
+    // Cek auth
+    const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+    if (!isLoggedIn) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Load data
     loadOrders();
     loadSettings();
     updateClock();
     setInterval(updateClock, 1000);
     setupStatusButtons();
+    
+    // Debug
+    const orders = JSON.parse(localStorage.getItem('orders')) || [];
+    console.log('📦 Total orders di localStorage:', orders.length);
 });
